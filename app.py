@@ -1,9 +1,7 @@
 import tkinter as tk
+from tkinter import font as tkFont
 import cv2
 from PIL import ImageTk, Image
-import imutils
-from imutils.video import WebcamVideoStream
-from imutils.video import FPS
 
 
 class App:
@@ -14,13 +12,13 @@ class App:
         WIDTH = 900
         self.root = tk.Tk()
         self.root.title("SmileDetectionApp")
-        
+        self.helv12 = tkFont.Font(self.root, family='Helvetica', size=12, weight=tkFont.BOLD)
         # creating a canvas
         canvas = tk.Canvas(self.root, height=HEIGHT, width=WIDTH)
         canvas.pack()
         
         # Frame to show the web cam feed 
-        video = tk.Frame(self.root, bg="#263D42")
+        video = tk.Frame(self.root, bg="white")
         video.place(relx = 0.05, rely =0.1, relwidth = 0.65, relheight = 0.8)
         # Frame to show the results from the video
         stats = tk.Frame(self.root, bg='#80c1ff')
@@ -29,27 +27,19 @@ class App:
         self.panel = tk.Label(video)
         self.panel.grid()
         self.count_faces = tk.Label(stats)
-        self.count_faces.place(relx = 0.2, rely=0.3)
+        self.count_faces.place(relx = 0.1, rely=0.3)
         self.count_smiles = tk.Label(stats)
-        self.count_smiles.place(relx = 0.2, rely=0.5)
+        self.count_smiles.place(relx = 0.1, rely=0.5)
 
-        button = tk.Button(self.root, text = "Quit", command = self.close)
-        button.place(relx = 0.8, rely = 0.8, anchor='s')
+        button = tk.Button(self.root, text = "Quit", command = self.close, font = self.helv12)
+        button.place(relx = 0.85, rely = 0.8, anchor='s')
 
         self.vidCap = cv2.VideoCapture(0)
-        #self.vidCap = WebcamVideoStream(src=0).start()
-        #self.fps = FPS().start()
-        fps = self.vidCap.get(cv2.CAP_PROP_FPS)
-        print("Frames per second : {0}".format(fps))
         self.video_stream()
-        #self.fps.stop()
-        #print("[INFO] elasped time: {:.2f}".format(self.fps.elapsed()))
-        #print("[INFO] approx. FPS: {:.2f}".format(self.fps.fps()))
-
         self.root.mainloop()
     
     def close(self):
-        exit()
+        self.root.destroy()
     
     def detectSmile(self, grayscale, img):
         num_faces = 0
@@ -68,17 +58,15 @@ class App:
 
     def video_stream(self):
         _, frame = self.vidCap.read()
-        #frame = self.vidCap.read()
         grayscale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         final, faces_detected, smiles_detected = self.detectSmile(grayscale, frame)
         final = final[...,[2,1,0]]
         img = Image.fromarray(final)
         imgtk = ImageTk.PhotoImage(image=img)
-        #self.fps.update()
         self.panel.imgtk = imgtk
         self.panel.configure(image=imgtk)
-        self.count_faces.configure(text= "Faces Detected : "+str(faces_detected))
-        self.count_smiles.configure(text= "Smiles Detected : "+str(smiles_detected))
+        self.count_faces.configure(text= "Faces Detected : "+str(faces_detected), font = self.helv12)
+        self.count_smiles.configure(text= "Smiles Detected : "+str(smiles_detected), font = self.helv12)
         self.panel.after(1, self.video_stream) 
 
 if __name__ == '__main__':
